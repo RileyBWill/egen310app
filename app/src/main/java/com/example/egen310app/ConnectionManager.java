@@ -1,3 +1,5 @@
+// code for this section gotten from CodingWithMitch on youtube or mitchtabian on Github
+
 package com.example.egen310app;
 
 import android.app.ProgressDialog;
@@ -17,11 +19,8 @@ import java.util.UUID;
 public class ConnectionManager {
     private static final String TAG = "ConnectionManager";
     private static final String appName = "EGEN310";
-
     private static ConnectionManager mConnectionmanager;
-
     private static final UUID mUUID = java.util.UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
-
     private final BluetoothAdapter baAdapter;
     Context mContext;
 
@@ -41,11 +40,17 @@ public class ConnectionManager {
         start();
     }
 
+    // get instance method to make connectionManager singleton
+    // singleton connectionManager so all activities can use the connection
     public static ConnectionManager getInstance(Context context) {
         if(mConnectionmanager == null) {
             mConnectionmanager = new ConnectionManager(context);
         }
         return mConnectionmanager;
+    }
+
+    public BluetoothDevice getBTDevice() {
+        return device;
     }
 
 
@@ -170,7 +175,7 @@ public class ConnectionManager {
             mConnectThread.cancel();
             mConnectThread = null;
         }
-        //
+        // if we don't have an accept thread, create one and start it
         if(mInsecureAcceptThread == null) {
             mInsecureAcceptThread = new AcceptThread();
             mInsecureAcceptThread.start();
@@ -269,7 +274,6 @@ public class ConnectionManager {
         Log.d(TAG, "write: write called");
         // perform write
         mConnectedThread.write(out);
-
     }
 
 }

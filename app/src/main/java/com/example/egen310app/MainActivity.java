@@ -2,38 +2,28 @@ package com.example.egen310app;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.Manifest;
-import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.ListView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.UUID;
+import java.lang.reflect.Method;
 
-public class MainActivity extends AppCompatActivity /*implements AdapterView.OnItemClickListener*/ {
+// This class handles the main activity functions of the app
+public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     BluetoothAdapter baAdapter;
-    //public ArrayList<BluetoothDevice> mBTDevices = new ArrayList<>();
-    //public DeviceListAdapter mDeviceListAdapter;
-    ListView lvNewDevices;
     ConnectionManager mConnectionManager;
-    private static final UUID myUUid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
-    BluetoothDevice mBTDevice;
 
 
     @Override
@@ -46,15 +36,9 @@ public class MainActivity extends AppCompatActivity /*implements AdapterView.OnI
         ImageButton turnLeft = (ImageButton) findViewById(R.id.turnLeft);
         ImageButton turnRight = (ImageButton) findViewById(R.id.turnRight);
         ImageButton rotateLeft = (ImageButton) findViewById(R.id.rotateLeft);
-        ImageButton rotateRight = (ImageButton) findViewById(R.id.turnRight);
+        ImageButton rotateRight = (ImageButton) findViewById(R.id.rotateRight);
         Button connectBluetooth = (Button) findViewById(R.id.connectBluetooth);
 
-        //lvNewDevices = (ListView) findViewById(R.id.lvNewDevices);
-        //mBTDevices = new ArrayList<>();
-
-        /*IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
-        registerReceiver(broadcastReceiver3, filter);*/
-        //lvNewDevices.setOnItemClickListener(MainActivity.this);
         baAdapter = BluetoothAdapter.getDefaultAdapter();
 
         enableDisable.setOnClickListener(new View.OnClickListener(){
@@ -64,6 +48,8 @@ public class MainActivity extends AppCompatActivity /*implements AdapterView.OnI
             }
         });
 
+
+        // Creates a listener for the appropriate button
         goForward.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent mEvent) {
@@ -75,6 +61,7 @@ public class MainActivity extends AppCompatActivity /*implements AdapterView.OnI
             }
         });
 
+        // Creates a listener for the appropriate button
         goBackwards.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent mEvent) {
@@ -86,14 +73,86 @@ public class MainActivity extends AppCompatActivity /*implements AdapterView.OnI
             }
         });
 
+        // Creates a listener for the appropriate button
+        turnLeft.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent mEvent) {
+                if (mEvent.getAction() == MotionEvent.ACTION_DOWN)
+                    turnLeft(view);
+                else if (mEvent.getAction() == MotionEvent.ACTION_UP)
+                    stop();
+                return true;
+            }
+        });
 
+        // Creates a listener for the appropriate button
+        turnRight.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent mEvent) {
+                if (mEvent.getAction() == MotionEvent.ACTION_DOWN)
+                    turnRight(view);
+                else if (mEvent.getAction() == MotionEvent.ACTION_UP)
+                    stop();
+                return true;
+            }
+        });
+
+        // Creates a listener for the appropriate button
+        rotateLeft.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent mEvent) {
+                if (mEvent.getAction() == MotionEvent.ACTION_DOWN)
+                    rotateLeft(view);
+                else if (mEvent.getAction() == MotionEvent.ACTION_UP)
+                    stop();
+                return true;
+            }
+        });
+
+        // Creates a listener for the appropriate button
+        rotateRight.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent mEvent) {
+                if (mEvent.getAction() == MotionEvent.ACTION_DOWN)
+                    rotateRight(view);
+                else if (mEvent.getAction() == MotionEvent.ACTION_UP)
+                    stop();
+                return true;
+            }
+        });
     }
 
+    // On click method to control the radio button, which controls the speed of the vehicle
+    public void onRadioButtonClicked(View view) {
+        boolean checked = ((RadioButton) view).isChecked();
+
+        switch(view.getId()) {
+            case R.id.slow:
+                if (checked) {
+                    byte[] bytes = {'s'};
+                    mConnectionManager.write(bytes);
+                }
+                break;
+            case R.id.medium:
+                if (checked) {
+                    byte[] bytes = {'m'};
+                    mConnectionManager.write(bytes);
+                }
+                break;
+            case R.id.fast:
+                if (checked) {
+                    byte[] bytes = {'f'};
+                    mConnectionManager.write(bytes);
+                }
+                break;
+        }
+    }
+
+
     /*
-
         Following section contains broadcast receivers
-
      */
+
     private final BroadcastReceiver broadcastReceiver1 = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
@@ -101,82 +160,66 @@ public class MainActivity extends AppCompatActivity /*implements AdapterView.OnI
                 // Discovery has found a device. Get the BluetoothDevice
                 // object and its info from the Intent.
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                String deviceName = device.getName();
+                String deviceName = device.getName(); // Name of Bluetooth device (might be null)
                 String deviceHardwareAddress = device.getAddress(); // MAC address
             }
         }
     };
-    /*private final BroadcastReceiver broadcastReceiver2 = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-            Log.d(TAG, "onReceive: ACTION_FOUND");
 
-            if(action.equals(BluetoothDevice.ACTION_FOUND)) {
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                mBTDevices.add(device);
-                Log.d(TAG, "onReceive: " + device.getName() + ": " + device.getAddress());
-                mDeviceListAdapter = new DeviceListAdapter(context, R.layout.device_adapter_view, mBTDevices);
-                lvNewDevices.setAdapter(mDeviceListAdapter);
-            }
-        }
-    };*/
-
-    /*private final BroadcastReceiver broadcastReceiver3 = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-
-            if(action.equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)) {
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-
-                if(device.getBondState() == BluetoothDevice.BOND_BONDED){
-                    Log.d(TAG, "BroadcastReceiver: BOND_BONDED");
-                }
-                if(device.getBondState() == BluetoothDevice.BOND_BONDING){
-                    Log.d(TAG, "BroadcastReceiver: BOND_BONDING");
-                }
-                if(device.getBondState() == BluetoothDevice.BOND_NONE){
-                    Log.d(TAG, "BroadcastReceiver: BOND_NONE");
-                }
-            }
-        }
-    };*/
     /*
         Following section contains button methods executed on clicks
      */
+
+    // This method sends a bit to the arduino which makes the car go forward.
     public void goForward(View view){
+        Log.d(TAG, "go forward");
         byte[] bytes = {'1'};
         mConnectionManager.write(bytes);
     }
 
+    // This method sends a bit to the arduino which makes the car go backwards.
     public void goBackwards(View view){
+        Log.d(TAG, "go backwards");
         byte[] bytes = {'2'};
         mConnectionManager.write(bytes);
     }
 
+    // This method sends a bit to the arduino which will rotate the front wheels left.
     public void turnLeft(View view){
-
+        Log.d(TAG, "turn left");
+        byte[] bytes = {'3'};
+        mConnectionManager.write(bytes);
     }
 
+    // This method sends a bit to the arduino which will rotate the front wheels right.
     public void turnRight(View view){
-
+        Log.d(TAG, "turn right");
+        byte[] bytes = {'4'};
+        mConnectionManager.write(bytes);
     }
 
+    // This method sends a bit to the arduino which will cause the motors to spin in opposite directions
     public void rotateLeft(View view){
-
+        Log.d(TAG, "rotate left");
+        byte[] bytes = {'5'};
+        mConnectionManager.write(bytes);
     }
 
+    // This method sends a bit to the arduino which will cause the motors to spin in opposite directions
     public void rotateRight(View view){
-
+        Log.d(TAG, "rotate right");
+        byte[] bytes = {'6'};
+        mConnectionManager.write(bytes);
     }
 
+    // This method will send a bit to the arduino causing the motors to stop
     public void stop() {
         byte[] bytes = {'0'};
         mConnectionManager.write(bytes);
     }
 
 
+    // This method handles enabling/disableing the bluetooth adapter
     public void enableDisableBT(){
         if(baAdapter == null){
             Log.d(TAG, "enableDisableBT: does not have BT capabilities.");
@@ -198,80 +241,22 @@ public class MainActivity extends AppCompatActivity /*implements AdapterView.OnI
     }
 
 
+    // This method begins the connection process for the bluetooth adapter
     public void connectBluetooth(View view){
-
-        /*if(baAdapter.isDiscovering()) {
-            baAdapter.cancelDiscovery();
-            Log.d(TAG, "connectBluetooth: stopping discovery");
-            //permission check method if required by android version
-            checkBTPermissions();
-
-            baAdapter.startDiscovery();
-            IntentFilter discoverDevicesIntent = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-            registerReceiver(broadcastReceiver2, discoverDevicesIntent);
-        }
-        if(!baAdapter.isDiscovering()) {
-
-            //permission check method if required by android version
-            checkBTPermissions();
-
-            baAdapter.startDiscovery();
-            Log.d(TAG, "connectBluetooth: starting discovery");
-            IntentFilter discoverDevicesIntent = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-            registerReceiver(broadcastReceiver2, discoverDevicesIntent);
-        }*/
 
         Intent intent = new Intent(MainActivity.this, BlueDevList.class);
         startActivity(intent);
-
         mConnectionManager = ConnectionManager.getInstance(MainActivity.this);
 
     }
 
-    /*// Method to check that app has correct permissions
-    private void checkBTPermissions() {
-        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
-            int permissionCheck = this.checkSelfPermission("Manifest.permission.ACCESS_FINE_LOACTION");
-            permissionCheck += this.checkSelfPermission("Manifest.permission.ACCESS_COARSE_LOCATION");
 
-            if(permissionCheck != 0) {
-                this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 1001);
-            }
-            else {
-                Log.d(TAG, "checkBTPermissions: not required. SDK version < LOLLIPOP");
-            }
-        }
-    }*/
-/*
-    Following section contains listeners
- */
-    /*@Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        baAdapter.cancelDiscovery();
-
-        Log.d(TAG, "onItemClick: you clicked on a device");
-        String deviceName = mBTDevices.get(position).getName();
-        String deviceAddress = mBTDevices.get(position).getAddress();
-
-        Log.d(TAG, "onItemClick: deviceName = " + deviceName);
-        Log.d(TAG, "onItemClick: deviceAddress = " + deviceAddress);
-
-        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            Log.d(TAG, "Trying to pair with " + deviceName);
-            mBTDevices.get(position).createBond();
-        }
-        lvNewDevices.setVisibility(View.GONE);
-
-
-    }*/
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
         unregisterReceiver(broadcastReceiver1);
-        /*unregisterReceiver(broadcastReceiver2);
-        unregisterReceiver(broadcastReceiver3);*/
+
     }
 }
 

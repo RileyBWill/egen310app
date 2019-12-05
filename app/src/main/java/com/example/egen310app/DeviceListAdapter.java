@@ -8,10 +8,9 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 
+// a small adapter class to handle listing all the bluetooth devices
 public class DeviceListAdapter extends ArrayAdapter<BluetoothDevice> {
     private LayoutInflater mLayoutInflater;
     private ArrayList<BluetoothDevice> mDevices;
@@ -25,14 +24,15 @@ public class DeviceListAdapter extends ArrayAdapter<BluetoothDevice> {
 
     }
 
+    // this method gets information about the bluetooth device and stores it in a user friendly manner
     public View getView(int position, View convertView, ViewGroup parent) {
         convertView = mLayoutInflater.inflate(mViewResourceId, null);
 
         BluetoothDevice device = mDevices.get(position);
 
         if(device != null) {
-            TextView deviceName = (TextView) convertView.findViewById(R.id.tvDeviceName);
-            TextView deviceAddress = (TextView) convertView.findViewById((R.id.tvDeviceAddress));
+            TextView deviceName = convertView.findViewById(R.id.tvDeviceName);
+            TextView deviceAddress = convertView.findViewById((R.id.tvDeviceAddress));
 
             if(deviceName != null) {
                 deviceName.setText(device.getName());

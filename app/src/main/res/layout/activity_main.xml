@@ -135,16 +135,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <ListView
-        android:id="@+id/lvNewDevices"
-        android:layout_width="154dp"
-        android:layout_height="250dp"
-        android:layout_below="@id/connectBluetooth"
-        android:layout_marginBottom="16dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/textView6"
-        app:layout_constraintStart_toEndOf="@+id/goBackwards" />
-
     <Button
         android:id="@+id/enableDisable"
         android:layout_width="102dp"
@@ -156,6 +146,46 @@
         app:layout_constraintBottom_toTopOf="@+id/textView6"
         app:layout_constraintEnd_toStartOf="@+id/connectBluetooth" />
 
+    <RadioGroup
+        android:id="@+id/radioGroup"
+        android:layout_width="0dp"
+        android:layout_height="98dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/goBackwards"
+        app:layout_constraintTop_toBottomOf="@+id/enableDisable">
+
+        <RadioButton
+            android:id="@+id/slow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onRadioButtonClicked"
+            android:text="Slow (40)" />
+
+        <RadioButton
+            android:id="@+id/medium"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onRadioButtonClicked"
+            android:text="Medium (50)" />
+
+        <RadioButton
+            android:id="@+id/fast"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onRadioButtonClicked"
+            android:text="Fast (70)" />
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:text="Set Speed"
+        app:layout_constraintBottom_toTopOf="@+id/radioGroup"
+        app:layout_constraintStart_toEndOf="@+id/goForward" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

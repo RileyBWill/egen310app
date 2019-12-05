@@ -20,16 +20,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import static android.bluetooth.BluetoothDevice.BOND_BONDED;
+
+
+// This class creates a popup activity to look at tall the lists of Bluetooth devices discovered
 public class BlueDevList extends AppCompatActivity implements AdapterView.OnItemClickListener {
     private static final String TAG = "BlueDevList";
     BluetoothAdapter baAdapter;
     public ArrayList<BluetoothDevice> mBTDevices;
     public DeviceListAdapter mDeviceListAdapter;
     ListView lvNewDevices;
-
     ConnectionManager mConnectionManager;
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
-
     BluetoothDevice mBTDevice;
 
 
@@ -57,23 +59,16 @@ public class BlueDevList extends AppCompatActivity implements AdapterView.OnItem
 
         this.generateListView();
 
-
     }
 
-    /*public BluetoothDevice getDevice() {
-        return mBTDevice;
-    }*/
-
-   /* public ConnectionManager getConnection() {
-        return mConnectionManager;
-    }*/
-
+    // This method will start the bluetooth connection
     public void startBTConnection(BluetoothDevice device, UUID uuid) {
         Log.d(TAG, "startBTConnection: initializing Bluetooth Connection");
 
         mConnectionManager.startClient(device, uuid);
     }
 
+    // This method is called to start the bluetooth connection
     public void startConnection() {
         startBTConnection(mBTDevice, MY_UUID);
     }
@@ -89,8 +84,10 @@ public class BlueDevList extends AppCompatActivity implements AdapterView.OnItem
 
             if(action.equals(BluetoothDevice.ACTION_FOUND)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                mBTDevices.add(device);
-                Log.d(TAG, "onReceive: " + device.getName() + ": " + device.getAddress());
+                if (device.getName() != null) {
+                    mBTDevices.add(device);
+                    Log.d(TAG, "onReceive: " + device.getName() + ": " + device.getAddress());
+                }
                 mDeviceListAdapter = new DeviceListAdapter(context, R.layout.device_adapter_view, mBTDevices);
                 lvNewDevices.setAdapter(mDeviceListAdapter);
             }
@@ -105,7 +102,7 @@ public class BlueDevList extends AppCompatActivity implements AdapterView.OnItem
             if(action.equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
-                if(device.getBondState() == BluetoothDevice.BOND_BONDED){
+                if(device.getBondState() == BOND_BONDED){
                     Log.d(TAG, "BroadcastReceiver: BOND_BONDED");
                     mBTDevice = device;
 
@@ -122,7 +119,7 @@ public class BlueDevList extends AppCompatActivity implements AdapterView.OnItem
     };
 
 
-
+    // This method creates the list view containing the discovered bluetooth devices
     private void generateListView() {
 
         if(baAdapter.isDiscovering()) {
@@ -147,6 +144,8 @@ public class BlueDevList extends AppCompatActivity implements AdapterView.OnItem
         }
     }
 
+
+    // This onclick listener handles listening to the user select a device to connect with, and beings the connection
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         baAdapter.cancelDiscovery();
@@ -158,15 +157,24 @@ public class BlueDevList extends AppCompatActivity implements AdapterView.OnItem
         Log.d(TAG, "onItemClick: deviceName = " + deviceName);
         Log.d(TAG, "onItemClick: deviceAddress = " + deviceAddress);
 
-        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2) {
+        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2 ) {
             Log.d(TAG, "Trying to pair with " + deviceName);
-            mBTDevices.get(position).createBond();
 
-            mBTDevice = mBTDevices.get(position);
-            mConnectionManager = ConnectionManager.getInstance(BlueDevList.this);
+            if ( mBTDevices.get(position).getBondState() != BOND_BONDED) {
+                // creates a bond for devices that aren't paired yet
+                mBTDevices.get(position).createBond();
+                mBTDevice = mBTDevices.get(position);
+                mConnectionManager = ConnectionManager.getInstance(BlueDevList.this);
+            } else {
+                // if the device is already paired, skips creating the bond and starts the connection
+                mBTDevice = mBTDevices.get(position);
+                mConnectionManager = ConnectionManager.getInstance(BlueDevList.this);
+                startConnection();
+            }
         }
     }
 
+    // checks permissions to avoid errors
     private void checkBTPermissions() {
         if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
             int permissionCheck = this.checkSelfPermission("Manifest.permission.ACCESS_FINE_LOACTION");
